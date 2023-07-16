@@ -75,4 +75,20 @@ crashlytics-build.properties
 /[Aa]ssets/IronSource/
 /[Aa]ssets/TextMesh Pro/
 /[Aa]ssets/ExternalDependencyManager/
+/[Aa]ssets/Editor Default Resources/
+/[Aa]ssets/Editor/
+/[Aa]ssets/GeneratedLocalRepo/
+/[Aa]ssets/Plugins/
+/[Aa]ssets/google-services
+
+/[Aa]ssets/FacebookSDK.meta
+/[Aa]ssets/Firebase.meta
+/[Aa]ssets/IronSource.meta
+/[Aa]ssets/TextMesh Pro.meta
+/[Aa]ssets/ExternalDependencyManager.meta
+/[Aa]ssets/Editor Default Resources.meta
+/[Aa]ssets/Editor.meta
+/[Aa]ssets/GeneratedLocalRepo.meta
+/[Aa]ssets/Plugins.meta
+/[Aa]ssets/google-services.json.meta
 

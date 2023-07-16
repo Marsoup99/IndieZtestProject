@@ -4,9 +4,7 @@ using UnityEngine;
 // Include Facebook namespace
 using Facebook.Unity;
 using Firebase.Auth;
-using UnityEngine.UI;
-using TMPro;
-using UnityEngine.Networking;
+using Firebase.Extensions;
 
 public class FirebaseAuthCtrl : MonoBehaviour
 {
@@ -15,8 +13,6 @@ public class FirebaseAuthCtrl : MonoBehaviour
     public FirebaseAuth auth;    
     public FirebaseUser User;
 
-    public Image img;
-    public TextMeshProUGUI text;
     void Awake()
     {
         //Init fb
@@ -34,6 +30,15 @@ public class FirebaseAuthCtrl : MonoBehaviour
         Debug.Log("Setting up Firebase Auth");
         //Set the authentication instance object
         auth = FirebaseAuth.DefaultInstance;
+        if(auth.CurrentUser != null)
+        {
+            User = auth.CurrentUser;
+            GetUserInfo();
+        }
+        else 
+        {
+            StartCoroutine(SignInAnoymousFirebase());
+        }
     }
 
     private void InitCallback ()
@@ -47,10 +52,6 @@ public class FirebaseAuthCtrl : MonoBehaviour
             if(FB.IsLoggedIn)
             {
                 FB.Mobile.RefreshCurrentAccessToken();
-                var accessToken = AccessToken.CurrentAccessToken;
-                Credential credential = FacebookAuthProvider.GetCredential(accessToken.TokenString);
-
-                StartCoroutine(AuthWithFirebase(credential));
             }
         } else {
             Debug.Log("Failed to Initialize the Facebook SDK");
@@ -88,7 +89,7 @@ public class FirebaseAuthCtrl : MonoBehaviour
             var accessToken = AccessToken.CurrentAccessToken;
             Credential credential = FacebookAuthProvider.GetCredential(accessToken.TokenString);
 
-            StartCoroutine(AuthWithFirebase(credential));
+            StartCoroutine(LinkUserInFirebase(credential));
         }
         else 
         {
@@ -96,45 +97,123 @@ public class FirebaseAuthCtrl : MonoBehaviour
         }
     }
 
-    private IEnumerator  AuthWithFirebase(Credential credential)
+     private IEnumerator SignInAnoymousFirebase()
     {
-        var task = auth.SignInAndRetrieveDataWithCredentialAsync(credential);
-        //Wait until the task completes
+        var task = auth.SignInAnonymouslyAsync();
         yield return new WaitUntil(predicate: () => task.IsCompleted);
-        if (task.IsCanceled) 
-        {
-            Debug.Log("SignInAndRetrieveDataWithCredentialAsync was canceled.");
+        if (task.IsCanceled) {
+            Debug.LogError("SignInAnonymouslyAsync was canceled.");
             yield break;
         }
-        else if (task.IsFaulted) 
+        if (task.IsFaulted) {
+            Debug.LogError("SignInAnonymouslyAsync encountered an error: " + task.Exception);
+            yield break;
+        }
+        else
         {
-            Debug.Log("SignInAndRetrieveDataWithCredentialAsync encountered an error: " + task.Exception);
+            User = task.Result.User;
+            GetUserInfo();
+            Debug.LogFormat("User signed in successfully: {0} ({1})", User.DisplayName, User.UserId);
+        }
+    }
+
+    private IEnumerator SignInFirebase(Credential credential)
+    {
+        var task = auth.SignInAndRetrieveDataWithCredentialAsync(credential);
+        yield return new WaitUntil(predicate: () => task.IsCompleted);
+            if (task.IsCanceled) {
+                Debug.LogError("SignInAndRetrieveDataWithCredentialAsync was canceled.");
+                yield break;
+            }
+            if (task.IsFaulted) {
+                Debug.LogError("SignInAndRetrieveDataWithCredentialAsync encountered an error: " + task.Exception);
+                yield break;
+            }
+            else{
+                //Apply new UserID
+                User = task.Result.User;
+                GetUserInfo();
+                Debug.LogFormat("User signed in successfully: {0} ({1})", User.DisplayName, User.UserId);
+            }
+            
+    }
+    private IEnumerator LinkUserInFirebase(Credential credential)
+    {
+        var task = auth.CurrentUser.LinkWithCredentialAsync(credential);
+        yield return new WaitUntil(predicate: () => task.IsCompleted);
+        // auth.SignInAndRetrieveDataWithCredentialAsync(credential).ContinueWithOnMainThread(task => {
+        //Wait until the task completes
+        if (task.IsCanceled) {
+            Debug.LogError("LinkWithCredentialAsync was canceled.");
+            yield break;
+        }
+        else if (task.IsFaulted) {
+            StartCoroutine(SignInFirebase(credential));
+            Debug.LogWarning("LinkWithCredentialAsync encountered an error: " + task.Exception);
             yield break;
         }
         else 
         {
             // Firebase.Auth.AuthResult result = task.Result;
             User = task.Result.User;
-            SetText();
+            GetUserInfo();
             Debug.LogFormat("User signed in successfully: {0} ({1})", User.DisplayName, User.UserId);
         }
     }
-
-    private void SetText()
+    private void GetUserInfo()
     {
-        text.SetText(User.DisplayName);
-        StartCoroutine(GetTexture(User.PhotoUrl.ToString()));
-    }
-    IEnumerator GetTexture(string url) {
-        UnityWebRequest www = UnityWebRequestTexture.GetTexture(url);
-        yield return www.SendWebRequest();
-        if (www.result != UnityWebRequest.Result.Success) {
-            Debug.Log(www.error);
+        if(FB.IsLoggedIn)
+        {
+            if(User.DisplayName == "")
+            {
+                FB.API ("/me?fields=name", HttpMethod.GET, result =>{
+                    Firebase.Auth.UserProfile profile = new Firebase.Auth.UserProfile {
+                        DisplayName = result.ResultDictionary["name"].ToString(),};
+                    User.UpdateUserProfileAsync(profile).ContinueWithOnMainThread(task => { UIManager.Instance.UpdateProfileName(User.DisplayName);});
+                });
+            }
+            else UIManager.Instance.UpdateProfileName(User.DisplayName);
+            FB.API ("/me/picture?type=square&height=100&width=100", HttpMethod.GET, UpdateProfilePictureFB);
         }
-        else {
-            Texture2D imageTex = ((DownloadHandlerTexture)www.downloadHandler).texture;
-            Sprite newSprite = Sprite.Create(imageTex, new Rect(0, 0, imageTex.width, imageTex.height), new Vector2(.5f, .5f));
-            img.sprite = newSprite;
+        else 
+        {
+            UIManager.Instance.UpdateProfileName(User.DisplayName);
+            UIManager.Instance.UpdateProfilePic();
+        }
+    }
+
+    private void UpdateProfilePictureFB(IGraphResult result)
+    {
+        if(result.Texture != null) 
+        {
+            Sprite newSprite = Sprite.Create(result.Texture, new Rect(0, 0, result.Texture.width, result.Texture.height), new Vector2(.5f, .5f));
+            // if texture is png otherwise you can use tex.EncodeToJPG().
+            byte[] texByte = result.Texture.EncodeToPNG ();
+
+            // convert byte array to base64 string
+            string base64Tex = System.Convert.ToBase64String (texByte);
+
+            // write string to playerpref
+            PlayerPrefs.SetString ("PlayerImg", base64Tex);
+            PlayerPrefs.Save ();
+        }
+        UIManager.Instance.UpdateProfilePic();
+    }
+
+    public void FirebaseAuthSignOut()
+    {
+        if(auth.CurrentUser != null)
+        {
+            FacebookLogOut();
+            auth.SignOut();
+            StartCoroutine(SignInAnoymousFirebase());
+        }
+    }
+    public void FacebookLogOut()
+    {
+        if(FB.IsLoggedIn)
+        {
+            FB.LogOut();
         }
     }
 }

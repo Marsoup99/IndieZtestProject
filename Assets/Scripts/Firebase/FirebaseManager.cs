@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Firebase;
+using Firebase.Extensions;
 
 public class FirebaseManager : MonoBehaviour
 {
@@ -30,7 +31,7 @@ public class FirebaseManager : MonoBehaviour
     private void Initialize()
     {
         //Check that all of the necessary dependencies for Firebase are present on the system
-        FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task =>
+        FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
         {
             dependencyStatus = task.Result;
             if (dependencyStatus == DependencyStatus.Available)
