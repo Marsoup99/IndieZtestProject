@@ -8,10 +8,8 @@ using Firebase.Extensions;
 
 public class FirebaseAuthCtrl : MonoBehaviour
 {
-    //Firebase variables
-    [Header("Firebase")]
-    public FirebaseAuth auth;    
-    public FirebaseUser User;
+    public FirebaseAuth auth {get; private set;}
+    public FirebaseUser user {get; private set;}
 
     void Awake()
     {
@@ -32,8 +30,9 @@ public class FirebaseAuthCtrl : MonoBehaviour
         auth = FirebaseAuth.DefaultInstance;
         if(auth.CurrentUser != null)
         {
-            User = auth.CurrentUser;
+            user = auth.CurrentUser;
             GetUserInfo();
+            UIManager.Instance?.LogTextDebug("User login (UID:" + user.UserId +")");
         }
         else 
         {
@@ -71,7 +70,11 @@ public class FirebaseAuthCtrl : MonoBehaviour
 
     public void LoginViaFacebook()
     {
-        if(FB.IsLoggedIn) return;
+        if(FB.IsLoggedIn) 
+        {
+            UIManager.Instance?.LogTextDebug("User already logged fb acount.");
+            return;
+        }
         if (!FB.IsInitialized) {
             // Initialize the Facebook SDK
             FB.Init(InitCallback, OnHideUnity);
@@ -80,6 +83,8 @@ public class FirebaseAuthCtrl : MonoBehaviour
         }
         var perms = new List<string>(){"public_profile", "email"};
         FB.LogInWithReadPermissions(perms, FacebookAuthCallback);
+
+        UIManager.Instance?.LogTextDebug("User linking fb acount...");
     }
 
     private void FacebookAuthCallback(ILoginResult result)
@@ -111,9 +116,10 @@ public class FirebaseAuthCtrl : MonoBehaviour
         }
         else
         {
-            User = task.Result.User;
+            user = task.Result.User;
             GetUserInfo();
-            Debug.LogFormat("User signed in successfully: {0} ({1})", User.DisplayName, User.UserId);
+            UIManager.Instance?.LogTextDebug("User login (UID:" + user.UserId +")");
+            Debug.LogFormat("User signed in successfully: {0} ({1})", user.DisplayName, user.UserId);
         }
     }
 
@@ -131,9 +137,10 @@ public class FirebaseAuthCtrl : MonoBehaviour
             }
             else{
                 //Apply new UserID
-                User = task.Result.User;
+                user = task.Result.User;
                 GetUserInfo();
-                Debug.LogFormat("User signed in successfully: {0} ({1})", User.DisplayName, User.UserId);
+                UIManager.Instance?.LogTextDebug("User signed in successfully: User name:" + user.DisplayName + "/n UserID:" + user.UserId);
+                Debug.LogFormat("User signed in successfully: {0} ({1})", user.DisplayName, user.UserId);
             }
             
     }
@@ -148,6 +155,7 @@ public class FirebaseAuthCtrl : MonoBehaviour
             yield break;
         }
         else if (task.IsFaulted) {
+            UIManager.Instance?.LogTextDebug("User already link account, signing in to that account /n");
             StartCoroutine(SignInFirebase(credential));
             Debug.LogWarning("LinkWithCredentialAsync encountered an error: " + task.Exception);
             yield break;
@@ -155,31 +163,33 @@ public class FirebaseAuthCtrl : MonoBehaviour
         else 
         {
             // Firebase.Auth.AuthResult result = task.Result;
-            User = task.Result.User;
+            user = task.Result.User;
             GetUserInfo();
-            Debug.LogFormat("User signed in successfully: {0} ({1})", User.DisplayName, User.UserId);
+            Debug.LogFormat("User signed in successfully: {0} ({1})", user.DisplayName, user.UserId);
         }
     }
     private void GetUserInfo()
     {
         if(FB.IsLoggedIn)
         {
-            if(User.DisplayName == "")
+            if(user.DisplayName == "")
             {
                 FB.API ("/me?fields=name", HttpMethod.GET, result =>{
                     Firebase.Auth.UserProfile profile = new Firebase.Auth.UserProfile {
                         DisplayName = result.ResultDictionary["name"].ToString(),};
-                    User.UpdateUserProfileAsync(profile).ContinueWithOnMainThread(task => { UIManager.Instance.UpdateProfileName(User.DisplayName);});
+                    user.UpdateUserProfileAsync(profile).ContinueWithOnMainThread(task => { UIManager.Instance?.UpdateProfileName(user.DisplayName);});
                 });
             }
-            else UIManager.Instance.UpdateProfileName(User.DisplayName);
+            else UIManager.Instance?.UpdateProfileName(user.DisplayName);
             FB.API ("/me/picture?type=square&height=100&width=100", HttpMethod.GET, UpdateProfilePictureFB);
         }
         else 
         {
-            UIManager.Instance.UpdateProfileName(User.DisplayName);
-            UIManager.Instance.UpdateProfilePic();
+            UIManager.Instance?.UpdateProfileName(user.DisplayName);
+            UIManager.Instance?.UpdateProfilePic();
         }
+
+        UpdateUserID();
     }
 
     private void UpdateProfilePictureFB(IGraphResult result)
@@ -197,7 +207,7 @@ public class FirebaseAuthCtrl : MonoBehaviour
             PlayerPrefs.SetString ("PlayerImg", base64Tex);
             PlayerPrefs.Save ();
         }
-        UIManager.Instance.UpdateProfilePic();
+        UIManager.Instance?.UpdateProfilePic();
     }
 
     public void FirebaseAuthSignOut()
@@ -215,6 +225,12 @@ public class FirebaseAuthCtrl : MonoBehaviour
         {
             FB.LogOut();
         }
+    }
+
+    private void UpdateUserID()
+    {
+        DevtodevManager.Instance.Initialize(user.UserId);
+        DevtodevManager.Instance.Tutorial(1);
     }
 }
 

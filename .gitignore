@@ -65,6 +65,7 @@ sysinfo.txt
 crashlytics-build.properties
 
 # Packed Addressables
+/IndiezTestProject_BurstDebugInformation_DoNotShip/
 /[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
 
 # Temporary auto-generated Android Assets

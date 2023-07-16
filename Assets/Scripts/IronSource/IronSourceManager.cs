@@ -1,13 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 public class IronSourceManager : MonoBehaviour
 {
     private string myAppKey;
     private bool bannerDisplay = false;
     [SerializeField] private IronSourceBannerPosition BannerPosition = IronSourceBannerPosition.BOTTOM;
     public static IronSourceManager Instance {get; private set;}
+
     void Awake()
     {
          if (Instance != null && Instance != this) 
@@ -36,9 +36,10 @@ public class IronSourceManager : MonoBehaviour
         Debug.Log("unity-script: IronSource.Agent.init");
         InitIronSource();
     }
-    
-    private void InitIronSource()
+
+    public void InitIronSource()
     {
+        CancelInvoke();
         //For Rewarded Video
         IronSource.Agent.init (myAppKey, IronSourceAdUnits.REWARDED_VIDEO);
         //For Interstitial
@@ -49,11 +50,29 @@ public class IronSourceManager : MonoBehaviour
         IronSource.Agent.init (myAppKey, IronSourceAdUnits.BANNER);
 
         IronSourceEvents.onSdkInitializationCompletedEvent += SdkInitializationCompletedEvent;
+
+        //
+        IronSource.Agent.shouldTrackNetworkState (true);
+        InvokeRepeating(nameof(UpdateStatus), 0.5f, 1);
     }
     
+    private void UpdateStatus()
+    {
+        if(UIManager.Instance == null) return;
+        else 
+        {
+            if (IronSource.Agent.isRewardedVideoAvailable()) UIManager.Instance.RewardVideoText(true);
+            else UIManager.Instance.RewardVideoText(false);
+
+            if (IronSource.Agent.isInterstitialReady()) UIManager.Instance.InterstitialText(true);
+            else UIManager.Instance.InterstitialText(false);
+        }
+    }
     private void SdkInitializationCompletedEvent()
     {
         IronSource.Agent.validateIntegration();
+
+
         LoadInterstitial();
     }
     
@@ -123,4 +142,5 @@ public class IronSourceManager : MonoBehaviour
         IronSource.Agent.destroyBanner();
     }
 
+    
 }

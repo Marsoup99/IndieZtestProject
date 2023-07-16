@@ -10,7 +10,14 @@ public class FirebaseManager : MonoBehaviour
 
     public DependencyStatus dependencyStatus;
     public FirebaseAuthCtrl AuthCtrl;
+    public FirebaseRealtimeDatabase DatabaseCtrl;
 
+    void Reset()
+    {
+        AuthCtrl = GetComponentInChildren<FirebaseAuthCtrl>();
+        DatabaseCtrl = GetComponentInChildren<FirebaseRealtimeDatabase>();
+
+    }
     void Awake()
     {
         if (Instance != null && Instance != this) 
@@ -38,6 +45,7 @@ public class FirebaseManager : MonoBehaviour
             {
                 //If they are avalible Initialize Firebase
                 AuthCtrl.Initialize();
+                DatabaseCtrl.Initialize();
             }
             else
             {
@@ -49,5 +57,9 @@ public class FirebaseManager : MonoBehaviour
     public void LoginViaFacebook()
     {
         AuthCtrl.LoginViaFacebook();
+    }
+    public string GetUserID()
+    {
+        return AuthCtrl.user.UserId;
     }
 }

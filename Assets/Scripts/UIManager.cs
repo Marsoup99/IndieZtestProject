@@ -11,6 +11,13 @@ public class UIManager : MonoBehaviour
     [Header("User profile")]
     public Image userProfileImg;
     public TextMeshProUGUI userName;
+
+    [Header("Log text")]
+    public TextMeshProUGUI textLog;
+
+    [Header("Ready text")]
+    [SerializeField] private TextMeshProUGUI rewardVideoText;
+    [SerializeField] private TextMeshProUGUI interstitialText;
     void Awake()
     {
         if (Instance != null && Instance != this) 
@@ -47,5 +54,32 @@ public class UIManager : MonoBehaviour
                 userProfileImg.sprite = newSprite;
             }
         }
+    }
+
+    public void LogTextDebug(string text)
+    {
+        textLog.text = text;
+    }
+
+    public void InterstitialText(bool ready)
+    {
+        if(ready)
+        {
+            interstitialText.text = "Ready";
+        }
+        else interstitialText.text = "Not Ready";
+    } 
+    public void RewardVideoText(bool ready)
+    {
+        if(ready)
+        {
+            rewardVideoText.text = "Ready";
+        }
+        else rewardVideoText.text = "Not Ready";
+    } 
+
+    public void InitIronSource()
+    {
+        IronSourceManager.Instance.InitIronSource();
     }
 }
