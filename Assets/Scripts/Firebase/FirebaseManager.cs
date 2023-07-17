@@ -62,4 +62,9 @@ public class FirebaseManager : MonoBehaviour
     {
         return AuthCtrl.user.UserId;
     }
+
+    public void GetFirstTimeLoginData()
+    {
+        StartCoroutine(DatabaseCtrl.GetUserFirstTimeLogin(GetUserID()));
+    }
 }

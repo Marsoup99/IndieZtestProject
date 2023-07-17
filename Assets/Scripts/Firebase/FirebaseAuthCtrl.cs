@@ -120,6 +120,9 @@ public class FirebaseAuthCtrl : MonoBehaviour
             GetUserInfo();
             UIManager.Instance?.LogTextDebug("User login (UID:" + user.UserId +")");
             Debug.LogFormat("User signed in successfully: {0} ({1})", user.DisplayName, user.UserId);
+
+            //Create user on database
+            FirebaseManager.Instance.DatabaseCtrl.CreateUser(user.UserId);
         }
     }
 
@@ -166,6 +169,7 @@ public class FirebaseAuthCtrl : MonoBehaviour
             user = task.Result.User;
             GetUserInfo();
             Debug.LogFormat("User signed in successfully: {0} ({1})", user.DisplayName, user.UserId);
+            UIManager.Instance?.LogTextDebug("User link complete, UserID:" + user.UserId);
         }
     }
     private void GetUserInfo()
