@@ -20,9 +20,11 @@ public class ISInterstitial : MonoBehaviour
     /************* Interstitial AdInfo Delegates *************/
     // Invoked when the interstitial ad was loaded succesfully.
     void InterstitialOnAdReadyEvent(IronSourceAdInfo adInfo) {
+        UIManager.Instance.InterstitialText(true);
     }
     // Invoked when the initialization process has failed.
     void InterstitialOnAdLoadFailed(IronSourceError ironSourceError) {
+        UIManager.Instance.InterstitialText(false);
     }
     // Invoked when the Interstitial Ad Unit has opened. This is the impression indication. 
     void InterstitialOnAdOpenedEvent(IronSourceAdInfo adInfo) {
@@ -32,9 +34,11 @@ public class ISInterstitial : MonoBehaviour
     }
     // Invoked when the ad failed to show.
     void InterstitialOnAdShowFailedEvent(IronSourceError ironSourceError, IronSourceAdInfo adInfo) {
+        UIManager.Instance.InterstitialText(false);
     }
     // Invoked when the interstitial ad closed and the user went back to the application screen.
     void InterstitialOnAdClosedEvent(IronSourceAdInfo adInfo) {
+        UIManager.Instance.InterstitialText(false);
         IronSource.Agent.loadInterstitial();
     }
     // Invoked before the interstitial ad was opened, and before the InterstitialOnAdOpenedEvent is reported.

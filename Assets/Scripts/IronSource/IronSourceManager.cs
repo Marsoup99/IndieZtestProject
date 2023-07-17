@@ -26,15 +26,18 @@ public class IronSourceManager : MonoBehaviour
     void Start()
     {
         myAppKey = ConstString.IRONSOURCE_API_KEY_ANDROID;
-
+        //
+        IronSource.Agent.shouldTrackNetworkState (true);
         Debug.Log("unity-script: IronSource.Agent.validateIntegration");
         IronSource.Agent.validateIntegration();
 
         Debug.Log("unity-script: unity version" + IronSource.unityVersion());
 
-        // SDK init
-        Debug.Log("unity-script: IronSource.Agent.init");
-        InitIronSource();
+        InvokeRepeating(nameof(UpdateStatus), 1, 0.5f);
+
+        // // SDK init
+        // Debug.Log("unity-script: IronSource.Agent.init");
+        // InitIronSource();
     }
 
     public void InitIronSource()
@@ -51,9 +54,7 @@ public class IronSourceManager : MonoBehaviour
 
         IronSourceEvents.onSdkInitializationCompletedEvent += SdkInitializationCompletedEvent;
 
-        //
-        IronSource.Agent.shouldTrackNetworkState (true);
-        InvokeRepeating(nameof(UpdateStatus), 0.5f, 1);
+        
     }
     
     private void UpdateStatus()

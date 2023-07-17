@@ -11,4 +11,7 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/IronSource/DemoScene/IronSourceDemo.unity
     guid: ccc0ac08126704384bdda74c26d99797
+  - enabled: 0
+    path: Assets/Adjust/ExampleGUI/ExampleGUI.unity
+    guid: 6aa8afcd558084586bce9f8efd3eb5d6
   m_configObjects: {}

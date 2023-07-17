@@ -230,7 +230,6 @@ public class FirebaseAuthCtrl : MonoBehaviour
     private void UpdateUserID()
     {
         DevtodevManager.Instance.Initialize(user.UserId);
-        DevtodevManager.Instance.Tutorial(1);
     }
 }
 

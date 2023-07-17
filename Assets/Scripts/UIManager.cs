@@ -8,12 +8,13 @@ public class UIManager : MonoBehaviour
 {
     public static UIManager Instance {get; private set;}
     
+    [SerializeField] private GameObject UIgameobject;
     [Header("User profile")]
-    public Image userProfileImg;
-    public TextMeshProUGUI userName;
+    [SerializeField] private Image userProfileImg;
+    [SerializeField] private TextMeshProUGUI userName;
 
     [Header("Log text")]
-    public TextMeshProUGUI textLog;
+    [SerializeField] private TextMeshProUGUI textLog;
 
     [Header("Ready text")]
     [SerializeField] private TextMeshProUGUI rewardVideoText;
@@ -31,6 +32,10 @@ public class UIManager : MonoBehaviour
         } 
     }
 
+    public void ShowUI()
+    {
+        UIgameobject.SetActive(true);
+    }
     public void UpdateProfileName(string name)
     {
         if(name == "")

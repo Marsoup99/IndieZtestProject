@@ -16,19 +16,17 @@ public class ISRewardVideo : MonoBehaviour
         IronSourceRewardedVideoEvents.onAdRewardedEvent += RewardedVideoOnAdRewardedEvent;
         IronSourceRewardedVideoEvents.onAdClickedEvent += RewardedVideoOnAdClickedEvent;
     }
-    void RewardedVideoAdClosedEvent()
-    {
-        
-    }
     /************* RewardedVideo AdInfo Delegates *************/
     // Indicates that there’s an available ad.
     // The adInfo object includes information about the ad that was loaded successfully
     // This replaces the RewardedVideoAvailabilityChangedEvent(true) event
     void RewardedVideoOnAdAvailable(IronSourceAdInfo adInfo) {
+        UIManager.Instance.RewardVideoText(true);
     }
     // Indicates that no ads are available to be displayed
     // This replaces the RewardedVideoAvailabilityChangedEvent(false) event
     void RewardedVideoOnAdUnavailable() {
+        UIManager.Instance.RewardVideoText(false);
     }
     // The Rewarded Video ad view has opened. Your activity will loose focus.
     void RewardedVideoOnAdOpenedEvent(IronSourceAdInfo adInfo){

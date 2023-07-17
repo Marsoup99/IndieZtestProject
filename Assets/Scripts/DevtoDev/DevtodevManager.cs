@@ -46,6 +46,10 @@ public class DevtodevManager : MonoBehaviour
     public void Tutorial (int stage)
     {
         DTDAnalytics.Tutorial(stage);
-        DTDAnalytics.LevelUp(level: Random.Range(0,10));
+        
+    }
+    public void LvlUp ()
+    {
+        DTDAnalytics.LevelUp(level: Random.Range(0,100));
     }
 }

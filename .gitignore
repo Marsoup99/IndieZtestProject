@@ -79,7 +79,8 @@ crashlytics-build.properties
 /[Aa]ssets/Editor Default Resources/
 /[Aa]ssets/Editor/
 /[Aa]ssets/GeneratedLocalRepo/
-/[Aa]ssets/Plugins/
+/[Aa]ssets/Plugins/iOS
+/[Aa]ssets/Plugins/tvOS
 /[Aa]ssets/google-services
 
 /[Aa]ssets/FacebookSDK.meta
@@ -92,4 +93,6 @@ crashlytics-build.properties
 /[Aa]ssets/GeneratedLocalRepo.meta
 /[Aa]ssets/Plugins.meta
 /[Aa]ssets/google-services.json.meta
+/[Aa]ssets/Plugins/iOS.meta
+/[Aa]ssets/Plugins/tvOS.meta
 
